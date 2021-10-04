@@ -8,7 +8,7 @@ def print_result(method_name, start_value, step_count,
            Количество шагов: {step_count}
            Приближенное решение: {approx_sol:.8f}
            |x_m - x_m-1|: {error:.8f}
-           Абс. величина невязки: {residual:.8f}\n''')
+           Абс. величина невязки: {residual}\n''')
 
 
 def root_finding(f, A, B, N=1000):
@@ -89,7 +89,7 @@ def newton(f, Df, A, B, epsilon, max_iter=200, modified=False):
 
         x_prev = x_sol
 
-        if modified:
+        if not modified:
             x_sol = x_sol - f(x_sol) / Df(x_sol)
         else:
             x_sol = x_sol - f(x_sol) / Df((A + B) / 2)
