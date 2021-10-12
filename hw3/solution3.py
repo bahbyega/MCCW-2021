@@ -1,5 +1,5 @@
-from solution2 import *
-from solution1 import *
+from hw1.solution1 import *
+from hw2.solution2 import *
 
 
 def f(x): return x * x / (1 + x * x)
@@ -13,23 +13,7 @@ def get_eps_as_10_times_neg_degree(n):
     return 10**(-n)
 
 
-if __name__ == '__main__':
-    # Вариант 6
-    var = "f(x) = x^2 / (1+x^2)"
-
-    print(f'''Задание 3. Задача обратного интерполирования
-            ----------------------------------------------
-            Вариант 6: {var}''')
-
-    a = float(input("Введите a: "))
-    b = float(input("Введите b: "))
-
-    print(f'Отрезок: [{a}, {b}]')
-
-    table_dim = int(input("\nВведите число значений в таблице: "))
-    table = create_table(a, b, table_dim)
-    print_table(table, True)
-
+def main_loop(table):
     while True:
         F = float(input(f'\nВведите f: '))
 
@@ -57,7 +41,7 @@ if __name__ == '__main__':
 
         eps = get_eps_as_10_times_neg_degree(
             int(input("\nВведите степень eps: ")))
-        #eps = 10**(-8)
+        # eps = 10**(-8)
 
         new_dist_table = dict()
         for root in table:
@@ -70,14 +54,41 @@ if __name__ == '__main__':
             return do_lagrange(list(sorted_table.values()), x, pol_deg) - F
 
         segments = root_finding(P, a, b, 10)
-        y_secant = secant(P, a, b, eps)
 
-        print(
-            f'\nЗначение аргументов многочлена (Секущие): {y_secant}')
-        print(
-            f'Модуль невязки: {abs(f(y_secant) - F)}')
+        # if segment with such root found
+        if len(segments) > 0:
+            a_k, b_k = segments[0][0], segments[0][1]
+            y_secant = secant(P, a_k, b_k, eps)
+
+            print(
+                f'\nЗначение аргументов многочлена (Секущие): {y_secant}')
+            print(
+                f'Модуль невязки: {abs(f(y_secant) - F)}')
+        else:
+            print(f'Секущие: невозможно найти корень.')
 
         if input("\nПродолжить с новыми F, n, eps? (y, n): ") == "y":
             continue
         else:
             break
+
+
+if __name__ == '__main__':
+
+    # Вариант 6
+    var = "f(x) = x^2 / (1+x^2)"
+
+    print(f'''Задание 3. Задача обратного интерполирования
+            ----------------------------------------------
+            Вариант 6: {var}''')
+
+    a = float(input("Введите a: "))
+    b = float(input("Введите b: "))
+
+    print(f'Отрезок: [{a}, {b}]')
+
+    table_dim = int(input("\nВведите число значений в таблице: "))
+    table = create_table(a, b, table_dim)
+
+    print_table(table, True)
+    main_loop(table)
