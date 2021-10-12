@@ -78,20 +78,19 @@ def main_loop(table, x=None):
     while True:
         print_table(table, True)
 
-        if x is None:
-            x = float(input(f'\nВведите x: '))
+        x = float(input(f'\nВведите x: '))
 
-        dif_table = dict()
+        dist_table = dict()
         for root in table:
-            dif_table[abs(root[0] - x)] = root
+            dist_table[abs(root[0] - x)] = root
 
-        sorted_table = dict(sorted(dif_table.items()))
+        sorted_table = dict(sorted(dist_table.items()))
         print_table(sorted_table, False)
 
         pol_deg = get_pol_deg_less_than_table_dim()
 
-        y_lagrange = do_lagrange(table, x, pol_deg)
-        y_newton = do_newton(table, x, pol_deg)
+        y_lagrange = do_lagrange(list(sorted_table.values()), x, pol_deg)
+        y_newton = do_newton(list(sorted_table.values()), x, pol_deg)
 
         print(
             f'\nЗначение интеполяционного многочлена (Лагранж): {y_lagrange}')
