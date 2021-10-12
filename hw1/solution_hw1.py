@@ -107,6 +107,8 @@ def secant(f, A, B, epsilon, max_iter=200):
     fb = f(b_init)
 
     for step in range(max_iter):
+        x_sol = (A * fb - B * fa) / (fb - fa)
+
         if abs(fb) < epsilon:
             print_result(method_name,
                          a_init,
@@ -114,9 +116,7 @@ def secant(f, A, B, epsilon, max_iter=200):
                          A,
                          abs(B - x_sol),
                          abs(f(B)))
-            return B
-
-        x_sol = (A * fb - B * fa) / (fb - fa)
+            return A
 
         A, B = B, x_sol
         fa, fb = fb, f(x_sol)
