@@ -45,7 +45,7 @@ def main_loop(table):
 
         new_dist_table = dict()
         for root in table:
-            new_dist_table[abs(root[0] - F)] = root
+            new_dist_table[abs(root[1] - F)] = root
 
         sorted_table = dict(sorted(new_dist_table.items()))
         print_table(sorted_table, False)
@@ -58,7 +58,7 @@ def main_loop(table):
         # if segment with such root found
         if len(segments) > 0:
             a_k, b_k = segments[0][0], segments[0][1]
-            y_secant = secant(P, a_k, b_k, eps)
+            y_secant = secant(P, a_k, b, eps)
 
             print(
                 f'\nЗначение аргументов многочлена (Секущие): {y_secant}')

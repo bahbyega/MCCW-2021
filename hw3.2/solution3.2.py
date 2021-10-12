@@ -1,5 +1,6 @@
 from dataclasses import astuple, dataclass
 from tabulate import tabulate
+import math
 
 
 @dataclass
@@ -73,10 +74,10 @@ def compute_d2x_with_error(table, error):
 def main_loop():
     while True:
         a = float(input(f'Введите a: '))
-        b = float(input(f'Введите b: '))
+        c = int(input(f'Введите число значенией: '))
         h = float(input(f'Введите h (шаг): '))
 
-        table = create_table(a, b, int((b-a)/h) + 1)
+        table = create_table(a, a + h*c, c+1)
 
         compute_dx_with_error_Oh1(table, h)
         compute_dx_with_error_Oh2(table, h)
@@ -98,9 +99,9 @@ if __name__ == '__main__':
     def dfx(x): return 2 * x / (1 + x * x)**2
     def d2fx(x): return (2 - 6*x*x) / (1 + x * x)**3
 
-    # def f(x): return x+3
-    # def dfx(x): return 1
-    # def d2fx(x): return 0
+    # def f(x): return math.exp(3*x)
+    # def dfx(x): return 3 * math.exp(3*x)
+    # def d2fx(x): return 9 * math.exp(3*x)
 
     print(f'''Задание 3.2. Численное дифференцирование.
             ----------------------------------------------
