@@ -74,7 +74,7 @@ def compute_d2x_with_error(table, error):
 def main_loop():
     while True:
         a = float(input(f'Введите a: '))
-        c = int(input(f'Введите число значенией: '))
+        c = int(input(f'Введите число значенией (m+1): ')) - 1
         h = float(input(f'Введите h (шаг): '))
 
         table = create_table(a, a + h*c, c+1)
