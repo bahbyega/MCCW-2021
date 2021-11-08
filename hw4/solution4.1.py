@@ -77,11 +77,11 @@ def main_loop():
 
     functions = [
         (lambda x: x * x / (1 + x * x), "x^2 / (1 + x^2)"),
-        (lambda x: x / x, "1"),
+        (lambda x: x * 0 + 1, "1"),
         (lambda x: x * 2, "2x"),
         (lambda x: x ** 2 * 3, "3x^2"),
         (lambda x: x ** 3 * 4, "4x^3"),
-        (lambda x: math.sin(x) / x, "sin(x) / x")
+        (lambda x: math.e ** ((-x)**2), "e^(-x^2)")
     ]
 
     quadr_formulas = [
