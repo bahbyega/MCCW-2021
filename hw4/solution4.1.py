@@ -62,8 +62,8 @@ def qf_3_8(f, a, n, h):
 
     for i in range(1, n + 1):
         sum += f(a + (i - 1) * h) \
-            + 3 * f((2 * (a + (i - 1) * h/3) + a + h/3 * i)) \
-            + 3 * f((a + (i - 1) * h/3) + 2 * (a + h/3 * i)) \
+            + 3 * f(a + i * h - 2 * h/3) \
+            + 3 * f(a + i * h - h/3) \
             + f(a + h * i)
 
     return sum * h/8
@@ -77,6 +77,11 @@ def main_loop():
 
     functions = [
         (lambda x: x * x / (1 + x * x), "x^2 / (1 + x^2)"),
+        (lambda x: x / x, "1"),
+        (lambda x: x * 2, "2x"),
+        (lambda x: x ** 2 * 3, "3x^2"),
+        (lambda x: x ** 3 * 4, "4x^3"),
+        (lambda x: math.sin(x) / x, "sin(x) / x")
     ]
 
     quadr_formulas = [
