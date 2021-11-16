@@ -5,7 +5,7 @@ from tabulate import tabulate
 from solution4_2 import *
 
 
-def clarify_by_runge(l, h_l, h, qf, f, a, b, n):
+def clarify_by_runge(l, h_l, h, qf, f, a, n):
     if qf.__name__ in ['left_rect', 'right_rect']:
         ast = 0
     elif qf.__name__ in ['mid_rect', 'trapeze']:
@@ -74,6 +74,6 @@ def main_loop():
 
 
 if __name__ == '__main__':
-    print(f'''Задание 4. Приближенное вычисление интеграла по квадратурным формулам
+    print(f'''Задание 4_3. Приближенное вычисление интеграла по составным квадратурным формулам
 ---------------------------------------------------------------------''')
     main_loop()
