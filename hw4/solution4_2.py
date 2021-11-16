@@ -102,81 +102,82 @@ def find_max(f, a, n, h):
 def theor_err(qf, a, b, n, h):
     if qf.__name__ == "qf_left_rect" or qf.__name__ == "qf_right_rect":
         m = find_max(df, a, n, h) * (b - a)
-        return 1/2 * m * (b - a) ** 2 / n
+        return 1/2 * m * (b - a) * h
 
     elif qf.__name__ == "qf_inter_rect":
         m = find_max(d2f, a, n, h) * (b - a)
-        return 1/24 * m * (b - a) ** 3 / n ** 2
+        return 1/24 * m * (b - a) * h**2
 
     elif qf.__name__ == "qf_trap":
         m = find_max(d2f, a, n, h) * (b - a)
-        return 1/12 * m * (b - a) ** 3 / n ** 2
+        return 1/12 * m * (b - a) * h**2
 
     elif qf.__name__ == "qf_simp":
         m = find_max(d4f, a, n, h) * (b - a)
-        return 1/2880 * m * (b - a) ** 5 / n ** 4
+        return 1/2880 * m * (b - a) * h**4
 
     else:
         m = find_max(d4f, a, n, h) * (b - a)
-        return 1/6480 * m * (b - a) ** 5 / n ** 4
+        return 1/6480 * m * (b - a) * h**4
 
 
-def main_loop():
+functions = [
+    (lambda x: x * x / (1 + x * x), "x ** 2 / (1 + x ** 2)"),
+    (lambda x: x * 0 + 1, "1"),
+    (lambda x: x * 2, "2x"),
+    (lambda x: x ** 2 * 3, "3x ** 2"),
+    (lambda x: x ** 3 * 4, "4x ** 3"),
+    (lambda x: math.e ** ((-x)**2), "e ** (-x ** 2)")
+]
 
-    functions = [
-        (lambda x: x * x / (1 + x * x), "x ** 2 / (1 + x ** 2)"),
-        (lambda x: x * 0 + 1, "1"),
-        (lambda x: x * 2, "2x"),
-        (lambda x: x ** 2 * 3, "3x ** 2"),
-        (lambda x: x ** 3 * 4, "4x ** 3"),
-        (lambda x: math.e ** ((-x)**2), "e ** (-x ** 2)")
-    ]
-
-    quadr_formulas = [
-        qf_left_rect,
-        qf_right_rect,
-        qf_inter_rect,
-        qf_trap,
-        qf_simp,
-        qf_3_8
-    ]
-
-    while True:
-        a = float(input("Введите a: "))
-        b = float(input("Введите b: "))
-        n = int(input("Введите число разбиений промежутка интегрирования: "))
-
-        h = (b - a) / n
-
-        for f, f_name in functions:
-            corr_integral = quad_f(f, a, b)
-            appr_integrals = [qf(f, a, n, h) for qf in quadr_formulas]
-            errs = [abs(y - corr_integral) for y in appr_integrals]
-
-            if f_name == "x ** 2 / (1 + x ** 2)":
-                theor_errs = [theor_err(qf, a, b, n, h)
-                              for qf in quadr_formulas]
-            else:
-                theor_errs = [0 for _ in range(len(quadr_formulas))]
-
-            qf_names = [qf.__name__ for qf in quadr_formulas]
-
-            print(f'\nf(x) = {f_name}')
-            print(f'Exact integral: {corr_integral}\n')
-            print(tabulate([(qf_name, y, err, terr) for qf_name, y, err, terr in
-                            zip(qf_names, appr_integrals, errs, theor_errs)],
-                           headers=["quad_formula",
-                                    "appr", "err", "theor_err"],
-                           floatfmt=".10f"))
-            print()
-
-        if input("\nПродолжить с новыми a, b, m? (y, n): ") == "y":
-            continue
-        else:
-            break
+quadr_formulas = [
+    qf_left_rect,
+    qf_right_rect,
+    qf_inter_rect,
+    qf_trap,
+    qf_simp,
+    qf_3_8
+]
 
 
 if __name__ == '__main__':
+    def main_loop():
+
+        while True:
+            a = float(input("Введите a: "))
+            b = float(input("Введите b: "))
+            n = int(input("Введите число разбиений промежутка интегрирования: "))
+
+            h = (b - a) / n
+            print(f'h = (b-a)/m = {h}')
+
+            for f, f_name in functions:
+                corr_integral = quad_f(f, a, b)
+                appr_integrals = [qf(f, a, n, h) for qf in quadr_formulas]
+                errs = [abs(y - corr_integral) for y in appr_integrals]
+
+                if f_name == "x ** 2 / (1 + x ** 2)":
+                    theor_errs = [theor_err(qf, a, b, n, h)
+                                  for qf in quadr_formulas]
+                else:
+                    theor_errs = ["-" for _ in range(len(quadr_formulas))]
+
+                qf_names = [qf.__name__ for qf in quadr_formulas]
+
+                print(f'\nf(x) = {f_name}')
+                print(f'Exact integral: {corr_integral}\n')
+                print(tabulate([(qf_name, y, err, terr) for qf_name, y, err, terr in
+                                zip(qf_names, appr_integrals, errs, theor_errs)],
+                               headers=["quad_formula",
+                                        "appr", "err", "theor_err"],
+                               floatfmt=".10f"))
+                print()
+
+            if input("\nПродолжить с новыми a, b, m? (y, n): ") == "y":
+                continue
+            else:
+                break
+
     print(f'''Задание 4. Приближенное вычисление интеграла по квадратурным формулам
 ---------------------------------------------------------------------''')
     main_loop()
