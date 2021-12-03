@@ -30,27 +30,27 @@ def z_sum(f, a, n, h):
 
 
 # АСТ 0
-def qf_left_rect(f, a, b, n, h):
+def qf_left_rect(f, a, n, h):
     return h * (f(a) + w_sum(f, a, n, h))
 
 
 # АСТ 0
-def qf_right_rect(f, a, b, n, h):
-    return h * (w_sum(f, a, n, h) + f(b))
+def qf_right_rect(f, a, n, h):
+    return h * (w_sum(f, a, n, h) + f(a + h * n))
 
 
 # АСТ 1
-def qf_inter_rect(f, a, b, n, h):
+def qf_inter_rect(f, a, n, h):
     return h * q_sum(f, a, n, h)
 
 
 # АСТ 1
-def qf_trap(f, a, b, n, h):
+def qf_trap(f, a, n, h):
     return h / 2 * (z_sum(f, a, n, h) + 2 * w_sum(f, a, n, h))
 
 
 # АСТ 3
-def qf_simp(f, a, b, n, h):
+def qf_simp(f, a, n, h):
     return h / 6 * (z_sum(f, a, n, h) + 2 * w_sum(f, a, n, h) + 4 * q_sum(f, a, n, h))
 
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
             for f, f_name in functions:
                 corr_integral = quad_f(f, a, b)
-                appr_integrals = [qf(f, a, b, n, h) for qf in quadr_formulas]
+                appr_integrals = [qf(f, a, n, h) for qf in quadr_formulas]
                 errs = [abs(y - corr_integral) for y in appr_integrals]
 
                 if f_name == "x ** 2 / (1 + x ** 2)":
