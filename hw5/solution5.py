@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     epsilon = 10 ** (-12)
 
-    example_meler = lambda x: math.cos(x ** 2) / math.sqrt(1 - x ** 2)
+    example_meler = lambda x: math.cos(x) ** 2
 
     while True:
         print("\n-------------------------------\nЗадание 1.")
