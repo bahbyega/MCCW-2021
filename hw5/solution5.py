@@ -8,6 +8,10 @@ from typing import Callable, Final, Sequence, Tuple
 
 from hw1.solution1 import root_finding, secant
 
+SEG_DEFAULT_BEG: Final = -1
+SEG_DEFAULT_END: Final = 1
+EPS_DEFAULT_VAL: Final = 10 ** (-20)
+
 
 def _legendre(x_val, num_nodes) -> float:
     """
@@ -40,6 +44,7 @@ def print_node_coef_pares(pares: Tuple[float, float]) -> float:
 def compute_gauss_node_coef_pares(num_nodes: int) -> Sequence[Tuple[float, float]]:
     """
     Calculate pares of nodes and coefficients with gauss' quadratic formula
+    using legendre's polynomial
     """
     node_coef_pares = []
 
@@ -74,24 +79,38 @@ def compute_meler_node_coef_pares(num_nodes: int) -> Sequence[Tuple[float, float
     return node_coef_pares
 
 
-def find_gauss_integral(
-    node_coef_pares: Tuple[float, float], func: Callable, seg_a: float, seg_b: float
-) -> float:
+def map_gauss_coef_pares(
+    node_coef_pares: Tuple[float, float], seg_a: float, seg_b: float
+) -> Sequence[Tuple[float, float]]:
     """
-    Linearly maps node_coef_paresn on [seg_a, seg_b] to [-1, 1],
+    Linearly maps node_coef_pares on [seg_a, seg_b] to [-1, 1],
 
     Given the pares of nodes and coefficient finds the approximate value of
     an integral on [-1, 1] of function in func.
     """
+    mapped_node_coef_pares = []
     similarity_coefficient = (seg_b - seg_a) / (SEG_DEFAULT_END - SEG_DEFAULT_BEG)
 
-    mapped_integral_sum = 0
     for root, coef in node_coef_pares:
         mapped_coef = coef * similarity_coefficient
         mapped_root = seg_a + similarity_coefficient * (root - SEG_DEFAULT_BEG)
-        mapped_integral_sum += mapped_coef * func(mapped_root)
+        mapped_node_coef_pares.append((mapped_root, mapped_coef))
 
-    return mapped_integral_sum
+    return mapped_node_coef_pares
+
+
+def find_gauss_integral(
+    mapped_node_coef_pares: Tuple[float, float], func: Callable
+) -> float:
+    """
+    Calculates the integral sum from mapped node-coefficient pares
+    """
+    integral_sum = 0
+
+    for root, coef in mapped_node_coef_pares:
+        integral_sum += coef * func(root)
+
+    return integral_sum
 
 
 def find_meler_integral(node_coef_pares: Tuple[float, float], func: Callable) -> float:
@@ -112,7 +131,8 @@ def find_meler_integral(node_coef_pares: Tuple[float, float], func: Callable) ->
 def do_accuracy_check_for(nodes_list: Sequence[int]) -> None:
     """
     Basically a test (or either 3 tests) of compute compute_gauss_node_coef_pares()
-    on three different numbers of nodes for interpolated quadratic formula
+    on three different numbers of nodes for interpolated quadratic formula.
+    All the integrals are calculated on the segment [-1, 1]
     """
     for num_nodes in nodes_list:
         if num_nodes == 3:
@@ -120,9 +140,7 @@ def do_accuracy_check_for(nodes_list: Sequence[int]) -> None:
 
             exact_integral = 68
             node_coef_pares = compute_gauss_node_coef_pares(num_nodes)
-            approx_integral = find_gauss_integral(
-                node_coef_pares, func, SEG_DEFAULT_BEG, SEG_DEFAULT_END
-            )
+            approx_integral = find_gauss_integral(node_coef_pares, func)
 
             print(f"\nPolynom: 6x^5 + 2x + 34, exact integral = {exact_integral}")
             print(f"Approximate integral: {approx_integral:.12f}")
@@ -132,9 +150,7 @@ def do_accuracy_check_for(nodes_list: Sequence[int]) -> None:
 
             exact_integral = 2
             node_coef_pares = compute_gauss_node_coef_pares(num_nodes)
-            approx_integral = find_gauss_integral(
-                node_coef_pares, func, SEG_DEFAULT_BEG, SEG_DEFAULT_END
-            )
+            approx_integral = find_gauss_integral(node_coef_pares, func)
 
             print(f"\nPolynom: 8x^7 + 3x^2, exact integral = {exact_integral}")
             print(f"Approximate integral: {approx_integral:.12f}")
@@ -144,9 +160,7 @@ def do_accuracy_check_for(nodes_list: Sequence[int]) -> None:
 
             exact_integral = 4
             node_coef_pares = compute_gauss_node_coef_pares(num_nodes)
-            approx_integral = find_gauss_integral(
-                node_coef_pares, func, SEG_DEFAULT_BEG, SEG_DEFAULT_END
-            )
+            approx_integral = find_gauss_integral(node_coef_pares, func)
 
             print(f"\nPolynom: 10x^9 + 5x^4 + 1, exact integral = {exact_integral}")
             print(f"Approximate integral: {approx_integral:.12f}")
@@ -194,19 +208,17 @@ def do_task_3() -> None:
 
     for num_nodes in num_nodes_list:
         node_coef_pares = compute_gauss_node_coef_pares(num_nodes)
+        mapped_node_coef_pares = map_gauss_coef_pares(node_coef_pares, seg_a, seg_b)
 
-        approx_integral = find_gauss_integral(
-            node_coef_pares,
-            example_gauss,
-            seg_a,
-            seg_b,
-        )
+        approx_integral = find_gauss_integral(mapped_node_coef_pares, example_gauss)
 
         print(f"\nN = {num_nodes}")
-        print(f"Checksum: {print_node_coef_pares(node_coef_pares):.12f}")
-        print(f"\nExact integral = {EXAMPLE_GAUSS_EXACT_INTEGRAL}")
+        print(f"Checksum: {print_node_coef_pares(mapped_node_coef_pares):.12f}")
+        print(f"\nExact integral = {EXAMPLE_GAUSS_EXACT_INTEGRAL(seg_a, seg_b)}")
         print(f"Approximate integral = {approx_integral}")
-        print(f"Error: {abs(approx_integral - EXAMPLE_GAUSS_EXACT_INTEGRAL)}")
+        print(
+            f"Error: {abs(approx_integral - EXAMPLE_GAUSS_EXACT_INTEGRAL(seg_a, seg_b))}"
+        )
 
 
 def do_task_4() -> None:
@@ -240,17 +252,14 @@ if __name__ == "__main__":
     """
     )
 
-    SEG_DEFAULT_BEG: Final = -1
-    SEG_DEFAULT_END: Final = 1
-    EPS_DEFAULT_VAL: Final = 10 ** (-20)
-
     # Variant 6
     example_gauss = lambda x: x * math.log(1 + x)
     example_meler = lambda x: math.cos(x) ** 2
+    exact = lambda x: 1 / 4 * (2 * (x ** 2 - 1) * math.log(x + 1) - (x - 2) * x)
 
     EXAMPLE_GAUSS_SEG_BEG = 0
     EXAMPLE_GAUSS_SEG_END = 1
-    EXAMPLE_GAUSS_EXACT_INTEGRAL = 0.25
+    EXAMPLE_GAUSS_EXACT_INTEGRAL = lambda a, b: exact(b) - exact(a)
 
     while True:
         do_task_1()
