@@ -6,7 +6,6 @@ for Methods of Computation and Computational Workshop course.
 
 import math
 from typing import Callable, Sequence, Tuple, Final
-from functools import partial
 
 import numpy as np
 from scipy import integrate
@@ -22,7 +21,7 @@ from hw5.solution5 import (
 
 def find_gauss_integral_with_composite_quad_formula(
     node_coef_pares: Tuple[float, float],
-    func: Callable,
+    function: Callable,
     num_div_intervals: int,
     len_div_interval: float,
     seg_beg: float,
@@ -42,7 +41,7 @@ def find_gauss_integral_with_composite_quad_formula(
             coef = node_coef[1]
             new_root = len_div_interval * root + (new_seg_beg + new_seg_end) / 2
 
-            integral_sum += coef * (func(new_root))
+            integral_sum += coef * (function(new_root))
 
     return integral_sum * len_div_interval / 2
 
@@ -54,10 +53,15 @@ def calc_moments_of_weight_func(
     Returns list of moments of a weight function, where each m_k can be calculated as
     an integral from seg_a to seg_b of w(x) * x^k, where w(x) is a weight function.
     """
+
+    def get_moment(w_func, deg):
+        moment, _ = integrate.quad(lambda x: w_func(x) * x ** deg, seg_a, seg_b)
+        return moment
+
     moments = []
 
     for i in range(2 * num_nodes):
-        moment, _ = integrate.quad(lambda x: weight_func(x) * x ** i, seg_a, seg_b)
+        moment = get_moment(weight_func, i)
         moments.append(moment)
 
     return moments
@@ -135,7 +139,7 @@ def find_coefs(
     rows_list = []
 
     for deg in range(num_nodes):
-        row = [root ** deg for root in roots]
+        row = [root ** deg for root in roots]  # can there be less then num_nodes roots?
         rows_list.append(row)
 
     return (np.linalg.inv(rows_list).dot(moments_qf[:num_nodes])).tolist()
@@ -195,12 +199,12 @@ def do_task_2() -> None:
 
     print("\nКоэффициенты a_n, ..., a_1 многочлена w(x):")
     a_coefs = solve_eq_system(num_nodes, moments_wf)
-    for i, a in enumerate(a_coefs):
-        print(f"{num_nodes - i}) {a:.12f}")
+    for i, a_coef in enumerate(a_coefs):
+        print(f"{num_nodes - i}) {a_coef:.12f}")
 
     print("\nОртогональный многочлен w(x): ", end="")
-    for i, a in enumerate(a_coefs):
-        print(f"{a}*x^{i} + ", end="")
+    for i, a_coef in enumerate(a_coefs):
+        print(f"{a_coef}*x^{i} + ", end="")
     print(f"x^{num_nodes}")
 
     print("\nУзлы (корни) w(x):")
@@ -236,7 +240,7 @@ if __name__ == "__main__":
     SEG_DEFAULT_END: Final = 1
 
     # Variant 6
-    func = lambda x: math.sin(x)
+    func = math.sin
     weight = lambda x: -x * math.log(x) if x > 0 else 0
     func_x_weight = lambda x: weight(x) * func(x)
 
