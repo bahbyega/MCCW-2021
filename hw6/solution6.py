@@ -5,10 +5,11 @@ for Methods of Computation and Computational Workshop course.
 """
 
 import math
-import numpy as np
-import scipy.integrate as integrate
-
 from typing import Callable, Sequence, Tuple, Final
+from functools import partial
+
+import numpy as np
+from scipy import integrate
 
 from hw1.solution1 import root_finding, secant
 from hw5.solution5 import (
@@ -21,7 +22,6 @@ from hw5.solution5 import (
 
 def find_gauss_integral_with_composite_quad_formula(
     node_coef_pares: Tuple[float, float],
-    num_nodes: int,
     func: Callable,
     num_div_intervals: int,
     len_div_interval: float,
@@ -29,7 +29,7 @@ def find_gauss_integral_with_composite_quad_formula(
 ) -> float:
     """
     Calculates integral using composite quadratic formala for gauss's
-    node-coefficients pares
+    node-coefficients pares.
     """
     integral_sum = 0
 
@@ -37,9 +37,9 @@ def find_gauss_integral_with_composite_quad_formula(
         new_seg_beg = seg_beg + i * len_div_interval
         new_seg_end = new_seg_beg + len_div_interval
 
-        for j in range(num_nodes):
-            root = node_coef_pares[j][0]
-            coef = node_coef_pares[j][1]
+        for node_coef in node_coef_pares:
+            root = node_coef[0]
+            coef = node_coef[1]
             new_root = len_div_interval * root + (new_seg_beg + new_seg_end) / 2
 
             integral_sum += coef * (func(new_root))
@@ -50,6 +50,10 @@ def find_gauss_integral_with_composite_quad_formula(
 def calc_moments_of_weight_func(
     num_nodes: int, weight_func: Callable, seg_a: float, seg_b: float
 ) -> Sequence[float]:
+    """
+    Returns list of moments of a weight function, where each m_k can be calculated as
+    an integral from seg_a to seg_b of w(x) * x^k, where w(x) is a weight function.
+    """
     moments = []
 
     for i in range(2 * num_nodes):
@@ -60,6 +64,19 @@ def calc_moments_of_weight_func(
 
 
 def solve_eq_system(num_nodes: int, moments_wf: Sequence[float]) -> Sequence[float]:
+    """
+    Solves equation system of such form:
+
+    | m_(n-1)  m_(n-2)  ...    m_0  | | a_1 |   |   -m_n    |
+    |  m_(n)   m_(n-1)  ...    m_1  | | a_2 | = | -m_(n+1)  |
+    |  ...       ...    ...    ...  | | ... |   |    ...    |
+    |m_(2n-2)  m_(2n-3) ...  m_(n-1)| | a_n |   | -m_(2n-1) |
+
+    Where a_1, ... , a_n are the roots of the equation to be found,
+    m_i is the i-th moment of a weight function.
+
+    Returns the list of a_1, ..., a_n.
+    """
     rows_list = []
     b_col = np.empty(shape=num_nodes)
 
@@ -75,22 +92,26 @@ def solve_eq_system(num_nodes: int, moments_wf: Sequence[float]) -> Sequence[flo
 def solve_orth_pol_eq_0(
     coef_list: Sequence[float], seg_a: float, seg_b: float
 ) -> Sequence[float]:
+    """
+    Finds roots of orthogonal polymon from coefficent list on [seg_a, seg_b]
+    """
     nodes = []
     segments = root_finding(_pol(coef_list), seg_a, seg_b)
 
     for seg in segments:
-        node = secant(
-            _pol(coef_list),
-            seg[0],
-            seg[1],
-            10 ** (-12),
-        )
+        node = secant(_pol(coef_list), seg[0], seg[1], 10 ** (-12))
         nodes.append(node)
 
     return nodes
 
 
 def _pol(coef_list) -> float:
+    """
+    Returns the reduced polynom by its coefficients list without 1st coef.
+
+    If coef_list = [a_1, a_2, ..., a_n] then it will return
+    p(x) = a_1 + a_2 * x + ... + a_n * x^(n-1) + x^n
+    """
     return lambda x: sum(
         coef * x ** deg for deg, coef in enumerate(coef_list)
     ) + x ** len(coef_list)
@@ -99,7 +120,18 @@ def _pol(coef_list) -> float:
 def find_coefs(
     num_nodes: int, roots: Sequence[float], moments_qf: Sequence[float]
 ) -> Sequence[float]:
+    """
+    Finds roots A_1, ... , A_n (coefficients) of a system of the form:
 
+    |   1         1      ...     1    | | A_1 |   | m_0 |
+    |  x_1       x_2     ...    x_n   | | A_2 | = | m_1 |
+    |  ...       ...     ...    ...   | | ... |   | ... |
+    |x_1^(n-1) x_2^(n-1) ... x_n^(n-1)| | A_n |   | m_n |
+
+    Where n = num_nodes, m_i is the i-th moment of a weight function
+
+    Returns the list of the coefficients A_1, ... , A_n.
+    """
     rows_list = []
 
     for deg in range(num_nodes):
@@ -129,7 +161,6 @@ def do_task_1() -> None:
 
     appr_sol = find_gauss_integral_with_composite_quad_formula(
         node_coef_pares,
-        num_nodes,
         func_x_weight,
         num_div_intervals,
         len_div_interval,
@@ -182,12 +213,12 @@ def do_task_2() -> None:
     for i, coef in enumerate(coefs):
         print(f"{i}) {coef}")
 
-    node_coef_pares = [(root, coef) for root, coef in zip(roots, coefs)]
+    node_coef_pares = list(zip(roots, coefs))
     approx_integral = find_gauss_integral(node_coef_pares, func)
     print(f"\nApproximate integral: {approx_integral:.12f}")
 
     test_pol = lambda x: x ** (2 * num_nodes - 1)
-    node_coef_pares = [(root, coef) for root, coef in zip(roots, coefs)]
+    node_coef_pares = list(zip(roots, coefs))
     approx_integral = find_gauss_integral(node_coef_pares, test_pol)
 
     print(f"\nНа одночлене степени N - 1 = {num_nodes - 1}:")
@@ -213,8 +244,8 @@ if __name__ == "__main__":
     EXAMPLE_SEG_END = 1
 
     while True:
-        print(f"func  : sin(x)")
-        print(f"weight: - x * ln(x)")
+        print("func  : sin(x)")
+        print("weight: - x * ln(x)")
         print()
 
         do_task_1()
